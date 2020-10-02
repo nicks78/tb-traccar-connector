@@ -16,15 +16,15 @@ function buildUrl(id){
   else { throw new Error('Invalid request'); }
 }
 
-router.post('/', function (req, res) {
+router.post('/', function async (req, res) {
 
   try {
 
-    var url = buildUrl(validator.escape(req.query.id));
-    var timestamp = validator.toInt(req.query.timestamp);
-    var date = new Date(timestamp*1000).toString();
+    const url = buildUrl(validator.escape(req.query.id));
+    const timestamp = validator.toInt(req.query.timestamp);
+    const date = new Date(timestamp*1000).toString();
 
-    var body = {
+    const body = {
       timestamp: timestamp,
       date: date,
       longitude: validator.toFloat(req.query.lon),
@@ -35,22 +35,26 @@ router.post('/', function (req, res) {
       accuracy: validator.toFloat(req.query.accuracy),
       battery: validator.toFloat(req.query.batt)
     };
-
+    
+    const request = await axios.post(url, body);
+    console.log('-------------Traccar POST: ------------' + url);
+    return res.status(201).send("Ok") 
+    
   } catch (error) {
-    console.error('Traccar validation error');
-    res.status(401).send('VALIDATION ERROR');
+    console.log('---------------Traccar POST ERROR--------------------',error);
+    res.status(error.response.status).send('VALIDATION ERROR');
   }
 
 
-  axios.post(url, body)
-  .then(function (response) {
-    console.log('Traccar POST: ' + url);
-    res.status(200).send('OK');
-  })
-  .catch(function (error) {
-    console.log('Traccar POST ERROR', { error: true, url: url, body: body });
-    res.status(error.response.status).send('ERROR');
-  });
+//   axios.post(url, body)
+//   .then(function (response) {
+//     console.log('Traccar POST: ' + url);
+//     res.status(200).send('OK');
+//   })
+//   .catch(function (error) {
+//     console.log('Traccar POST ERROR', { error: true, url: url, body: body });
+//     res.status(error.response.status).send('ERROR');
+//   });
 
 })
 
